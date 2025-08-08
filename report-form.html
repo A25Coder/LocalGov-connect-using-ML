@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Report</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body>
+    <div class="container report-page">
+        <div class="form-container">
+            <h1 class="form-title" id="report-title">Report Issue</h1>
+            <form action="#" method="post" enctype="multipart/form-data">
+                <div class="input-group">
+                    <i class="fas fa-camera"></i>
+                    <input type="file" id="photo-upload" required>
+                    <label for="photo-upload" class="file-label">Upload Photo</label>
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <input type="text" placeholder="Enter Location or Landmark" required>
+                </div>
+                <div class="input-group">
+                     <i class="fas fa-pencil-alt"></i>
+                    <textarea placeholder="Describe the issue in detail..." rows="4"></textarea>
+                </div>
+                <button type="submit" class="btn">Submit Report</button>
+                <a href="dashboard.html" class="back-link">Go Back to Dashboard</a>
+            </form>
+        </div>
+    </div>
+    <script>
+        // Part 1: Set the title from the URL (यह पुराना काम भी करेगा)
+        const urlParams = new URLSearchParams(window.location.search);
+        const category = urlParams.get('category');
+        if (category) {
+            document.getElementById('report-title').innerText = 'Report: ' + category;
+        }
+
+        // Part 2: Handle form submission with AI (यह नया फीचर है)
+        const form = document.querySelector('form');
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault(); // Prevent the form's normal submission
+
+            const photoInput = document.getElementById('photo-upload');
+            if (photoInput.files.length === 0) {
+                alert('Please select a photo to upload.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('photo', photoInput.files[0]);
+
+            const submitButton = form.querySelector('.btn');
+            submitButton.innerText = 'Analyzing...';
+            submitButton.disabled = true;
+
+            try {
+                // Send the photo to the backend
+                const response = await fetch('http://127.0.0.1:5000/analyze-image', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('AI Detected Category: ' + result.detected_category + '\nReport Submitted Successfully!');
+                    form.reset(); 
+                } else {
+                    alert('Error: ' + result.error);
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Could not connect to the server. Make sure the backend is running.');
+            } finally {
+                submitButton.innerText = 'Submit Report';
+                submitButton.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
