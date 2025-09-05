@@ -1,0 +1,68 @@
+/* src/css/ActivityModal.css */
+.activity-modal {
+  padding: 0;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.modal-header h3 {
+  margin: 0;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+  color: var(--text-light);
+  line-height: 1;
+}
+
+.activity-tabs {
+  display: flex;
+  justify-content: space-around;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.activity-tabs button {
+  flex-grow: 1;
+  padding: 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 1rem;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.activity-tabs button.active {
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
+}
+
+.activity-content {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex-grow: 1;
+}
+
+.activity-item {
+  padding: 0.75rem;
+  border-radius: 8px;
+  background-color: #f8fafc;
+  margin-bottom: 0.75rem;
+  border: 1px solid var(--border-color);
+}
+
