@@ -1,7 +1,9 @@
 body {
   margin: 0;
   font-family: sans-serif;
-  background: #f9f9f9;
+
+  background-color: aliceblue;
+  background-size: cover;
 }
 
 .app-container {
