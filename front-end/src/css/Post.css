@@ -1,56 +1,120 @@
-form {
-  max-width: 500px;
-  margin: 2rem auto;
-  padding: 1.5rem;
-  border: 1px solid #ddd;
-  border-radius: 12px;
-  background-color: #f9f9f9;
+/* src/css/Post.css */
+.form-container {
+  max-width: 600px;
+  margin: 1rem auto;
+  padding: 2rem;
+  background-color: var(--card-background);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  font-family: 'Segoe UI', sans-serif;
 }
 
-form h2 {
+.form-container h2 {
   text-align: center;
-  margin-bottom: 1rem;
-  font-size: 1.5rem;
-  color: #333;
+  margin-bottom: 2rem;
+  font-size: 1.75rem;
+  color: var(--text-color);
 }
 
-form input,
-form textarea {
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-container label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--text-light);
+}
+
+.form-container input[type="text"],
+.form-container input[type="file"],
+.form-container textarea {
   width: 100%;
-  padding: 0.75rem;
-  margin-bottom: 1rem;
-  border: 1px solid #ccc;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   font-size: 1rem;
   box-sizing: border-box;
 }
 
-form textarea {
+.form-container textarea {
   resize: vertical;
-  min-height: 100px;
+  min-height: 120px;
+  font-family: 'Poppins', sans-serif;
 }
 
-form button {
-  width: 100%;
-  background-color: #4CAF50;
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 1rem;
+}
+
+.category-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  background-color: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.category-card:hover {
+  border-color: var(--primary-color);
+  background-color: #f0f7ff;
+}
+
+.category-card.active {
+  border-color: var(--primary-color);
+  background-color: var(--primary-color);
   color: white;
-  padding: 0.75rem;
-  font-size: 1rem;
+}
+
+.category-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.category-name {
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.submit-btn {
+  width: 100%;
+  background-color: var(--primary-color);
+  color: white;
+  padding: 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
 
-form button:hover {
-  background-color: #45a049;
+.submit-btn:hover {
+  background-color: #2563eb;
 }
 
-form p {
+.submit-btn:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.error-message {
+  color: red;
   text-align: center;
-  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.success-message {
   color: green;
-  font-weight: bold;
+  text-align: center;
+  margin-bottom: 1rem;
 }

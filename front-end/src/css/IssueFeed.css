@@ -1,0 +1,110 @@
+/* src/css/IssueFeed.css */
+.issue-feed-container {
+  max-width: 500px;
+  margin: 1rem auto;
+}
+
+.post-card {
+  background-color: var(--card-background);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  font-family: 'Poppins', sans-serif;
+}
+
+.post-header {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  gap: 0.75rem;
+}
+
+.header-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: var(--primary-color);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.header-name {
+  font-weight: 600;
+  flex-grow: 1;
+}
+
+.post-image {
+  width: 100%;
+  max-height: 500px;
+  object-fit: cover;
+}
+
+.post-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  font-size: 1.5rem;
+}
+
+.action-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.2s ease;
+}
+.action-btn:hover {
+  transform: scale(1.1);
+}
+
+.action-btn.liked {
+  color: red;
+}
+
+.post-stats {
+  display: flex;
+  gap: 1rem;
+  padding: 0 1rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.post-description {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+}
+.post-description strong {
+  margin-right: 0.5rem;
+}
+/* -- Sorter Styles -- */
+.sorter-container {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.sorter-container button {
+  background-color: var(--card-background);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 0.5rem 1rem;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sorter-container button.active {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.sorter-container button:hover:not(.active) {
+  background-color: #f0f7ff;
+}
