@@ -12,7 +12,10 @@
   "dependencies": {
     "@supabase/auth-helpers-react": "^0.5.0",
     "@supabase/auth-ui-react": "^0.4.7",
+ ui-update-fix
     "date-fns": "^4.1.0",
+    "@supabase/auth-ui-shared": "^0.1.8",
+ main
     "leaflet": "^1.9.4",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
