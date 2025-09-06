@@ -1,11 +1,14 @@
 /* src/css/ActivityModal.css */
 .activity-modal {
-  padding: 0;
+  width: 90%;
+  max-width: 450px;
   max-height: 80vh;
   display: flex;
   flex-direction: column;
+  padding: 0;
 }
 
+/* Modal Header */
 .modal-header {
   display: flex;
   justify-content: space-between;
@@ -27,42 +30,54 @@
   line-height: 1;
 }
 
-.activity-tabs {
-  display: flex;
-  justify-content: space-around;
-  border-bottom: 1px solid var(--border-color);
-  flex-shrink: 0;
-}
-
-.activity-tabs button {
-  flex-grow: 1;
-  padding: 1rem;
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-family: 'Poppins', sans-serif;
-  font-weight: 600;
-  font-size: 1rem;
-  border-bottom: 3px solid transparent;
-  transition: all 0.2s ease;
-}
-
-.activity-tabs button.active {
-  color: var(--primary-color);
-  border-bottom-color: var(--primary-color);
-}
-
-.activity-content {
+/* Modal Body */
+.modal-body {
   padding: 1.5rem;
   overflow-y: auto;
   flex-grow: 1;
 }
 
-.activity-item {
-  padding: 0.75rem;
-  border-radius: 8px;
-  background-color: #f8fafc;
-  margin-bottom: 0.75rem;
-  border: 1px solid var(--border-color);
+/* Posts List */
+.posts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
+.activity-post-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+}
+
+.post-title {
+  font-weight: 500;
+}
+
+/* Status Badge */
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.status-pending {
+  background-color: #fff0c2;
+  color: #8c6d00;
+}
+
+.status-in-progress {
+  background-color: #cce5ff;
+  color: #004085;
+}
+
+.status-resolved {
+  background-color: #d4edda;
+  color: #155724;
+}
