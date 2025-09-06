@@ -1,0 +1,21 @@
+/* src/css/ThemeToggle.css */
+.theme-toggle-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.theme-toggle-btn {
+    width: 50px; height: 26px; border-radius: 13px;
+    background-color: var(--border-color); border: none;
+    cursor: pointer; padding: 3px;
+    display: flex; align-items: center;
+}
+.toggle-dot {
+    width: 20px; height: 20px;
+    background-color: white; border-radius: 50%;
+    transition: transform 0.3s ease;
+}
+.toggle-dot.active {
+    transform: translateX(24px);
+    background-color: var(--primary-color);
+}

@@ -2,17 +2,18 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import '../css/Profile.css';
-import ActivityModal from './ActivityModal'; // Yeh import ab kaam karega
+import ActivityModal from './ActivityModal';
 
 const Profile = ({ session }) => {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
   const [isEditModalOpen, setEditModalOpen] = useState(false);
   const [isPasswordModalOpen, setPasswordModalOpen] = useState(false);
-  const [isActivityModalOpen, setActivityModalOpen] = useState(false); // Naya state
+  const [isActivityModalOpen, setActivityModalOpen] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [uploading, setUploading] = useState(false);
 
+  // Jab bhi session change ho, user ka profile data fetch karna
   useEffect(() => {
     if (session) {
       const fetchProfile = async () => {
@@ -25,16 +26,19 @@ const Profile = ({ session }) => {
     }
   }, [session]);
 
+  // Profile name update karne ka function
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     const newName = e.target.fullName.value;
-    const { error } = await supabase.from('profiles').upsert({ id: session.user.id, full_name: newName });
+    // 'upsert' ka use karke profile create ya update karna
+    const { error } = await supabase.from('profiles').upsert({ id: session.user.id, full_name: newName, updated_at: new Date() });
     if (!error) {
       setProfile(prev => ({ ...prev, full_name: newName }));
-      setEditModalOpen(false);
+      setEditModalOpen(false); // Modal band karna
     }
   };
 
+  // Profile picture upload karne ka function
   const uploadAvatar = async (event) => {
     if (!event.target.files || event.target.files.length === 0) return;
     const file = event.target.files[0];
@@ -49,6 +53,7 @@ const Profile = ({ session }) => {
     setUploading(false);
   };
 
+  // Password update karne ka function
   const handlePasswordUpdate = async () => {
     const { error } = await supabase.auth.updateUser({ password: newPassword });
     if (error) alert('Error: ' + error.message);
@@ -56,24 +61,16 @@ const Profile = ({ session }) => {
     setNewPassword('');
     setPasswordModalOpen(false);
   };
-
-  const handlePasswordReset = async () => {
-    alert("We've sent a password reset link to your email. Please check your inbox.");
-    await supabase.auth.resetPasswordForEmail(session.user.email, {
-      redirectTo: window.location.origin,
-    });
-    setPasswordModalOpen(false);
-  };
-
+  
+  // Logout ka function
   const handleLogout = async () => await supabase.auth.signOut();
 
   if (loading) return <p>Loading profile...</p>;
-
   if (!session) return <p>Please log in to see your profile.</p>;
 
   return (
     <div className="profile-container">
-      {/* Profile Header */}
+      {/* Profile Header: Avatar, Name, Email */}
       <div className="profile-header">
         <label htmlFor="avatar-upload" className="avatar-wrapper">
           {profile?.avatar_url ? (
@@ -88,14 +85,14 @@ const Profile = ({ session }) => {
         <p className="profile-email">{session.user.email}</p>
       </div>
 
-      {/* Account Settings Card */}
+      {/* Account Settings */}
       <div className="profile-card">
         <h3>Account</h3>
         <button onClick={() => setEditModalOpen(true)} className="profile-menu-item">Edit Profile</button>
         <button onClick={() => setPasswordModalOpen(true)} className="profile-menu-item">Change Password</button>
       </div>
 
-      {/* General Settings Card */}
+      {/* General Settings */}
       <div className="profile-card">
         <h3>General</h3>
         <button onClick={() => setActivityModalOpen(true)} className="profile-menu-item">Your Activity</button>
@@ -103,13 +100,13 @@ const Profile = ({ session }) => {
         <button onClick={handleLogout} className="profile-menu-item logout-btn">Log Out</button>
       </div>
 
-      {/* Edit Profile Modal */}
+      {/* Edit Profile Modal (Popup) */}
       {isEditModalOpen && (
         <div className="modal-overlay">
           <div className="modal-content">
             <h3>Edit Your Name</h3>
             <form onSubmit={handleUpdateProfile}>
-              <input type="text" name="fullName" defaultValue={profile?.full_name} className="modal-input" required />
+              <input type="text" name="fullName" defaultValue={profile?.full_name} className="modal-input" placeholder="Enter your full name" required />
               <div className="modal-actions">
                 <button type="button" onClick={() => setEditModalOpen(false)} className="btn-secondary">Cancel</button>
                 <button type="submit" className="btn btn-primary">Save</button>
@@ -119,22 +116,21 @@ const Profile = ({ session }) => {
         </div>
       )}
 
-      {/* Change Password Modal */}
+      {/* Change Password Modal (Popup) */}
       {isPasswordModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h3>Change Password</h3>
-            <input type="password" placeholder="Enter new password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="modal-input" required />
-            <div className="modal-actions">
-              <button type="button" onClick={() => setPasswordModalOpen(false)} className="btn-secondary">Cancel</button>
-              <button type="button" onClick={handlePasswordUpdate} className="btn btn-primary">Update</button>
-            </div>
-            <a onClick={handlePasswordReset} className="forgot-password-link">Forgot Password?</a>
-          </div>
-        </div>
+         <div className="modal-overlay">
+           <div className="modal-content">
+             <h3>Change Password</h3>
+             <input type="password" placeholder="Enter new password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="modal-input" required />
+             <div className="modal-actions">
+               <button type="button" onClick={() => setPasswordModalOpen(false)} className="btn-secondary">Cancel</button>
+               <button type="button" onClick={handlePasswordUpdate} className="btn btn-primary">Update</button>
+             </div>
+           </div>
+         </div>
       )}
 
-      {/* Naya Activity Modal */}
+      {/* Activity Modal (Popup) */}
       {isActivityModalOpen && (
         <ActivityModal session={session} onClose={() => setActivityModalOpen(false)} />
       )}
@@ -143,4 +139,3 @@ const Profile = ({ session }) => {
 };
 
 export default Profile;
-

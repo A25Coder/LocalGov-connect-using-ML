@@ -1,0 +1,97 @@
+/* src/css/AdminPanel.css */
+
+.admin-panel-container {
+    padding: 1rem;
+}
+
+.issues-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.admin-issue-card {
+    background: var(--card-background, #fff);
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.admin-issue-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.admin-issue-card h4 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+}
+
+.access-denied {
+    text-align: center;
+    padding: 3rem;
+    background: #fff3f3;
+    border: 1px solid #ffcccc;
+    border-radius: 8px;
+}
+
+/* === Status Container + Badge === */
+.status-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.status-badge {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.status-pending {
+    background-color: #fff0c2;
+    color: #8c6d00;
+}
+
+.status-in-progress {
+    background-color: #cce5ff;
+    color: #004085;
+}
+
+.status-resolved {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+/* === Status Dropdown === */
+.status-changer {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color, #ddd);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.status-changer label {
+    font-weight: 500;
+}
+
+.status-select {
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+}
+
+.status-select:hover {
+    border-color: #888;
+}

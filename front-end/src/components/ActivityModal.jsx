@@ -1,78 +1,74 @@
 // src/components/ActivityModal.jsx
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
-import '../css/ActivityModal.css'; // Is file ko agle step mein banayenge
+import '../css/ActivityModal.css';
 
 const ActivityModal = ({ session, onClose }) => {
-  const [activeTab, setActiveTab] = useState('Posts');
-  const [loading, setLoading] = useState(true);
-  const [activities, setActivities] = useState({ posts: [], comments: [], likes: [] });
+    const [myPosts, setMyPosts] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchActivities = async () => {
-      if (!session) return;
-      setLoading(true);
+    useEffect(() => {
+        const fetchMyPosts = async () => {
+            setLoading(true);
 
-      // 1. User ke post kiye gaye issues fetch karo
-      const { data: posts } = await supabase.from('civic_issues').select('id, title, created_at').eq('user_id', session.user.id);
+            const { data, error } = await supabase
+                .from('civic_issues')
+                .select('id, title, status, created_at')
+                .eq('user_id', session.user.id)
+                .order('created_at', { ascending: false });
 
-      // 2. User ke kiye gaye comments fetch karo
-      const { data: comments } = await supabase.from('comments').select('id, content, created_at, issue_id').eq('user_email', session.user.email);
-      
-      // 3. User ke kiye gaye likes (aur jis post ko like kiya, uska title bhi) fetch karo
-      const { data: likes } = await supabase.from('likes').select('id, created_at, civic_issues(title)').eq('user_id', session.user.id);
+            if (error) {
+                console.error('Error fetching posts:', error.message);
+                setMyPosts([]);
+            } else {
+                setMyPosts(data || []);
+            }
 
-      setActivities({
-        posts: posts || [],
-        comments: comments || [],
-        likes: likes || [],
-      });
-      setLoading(false);
-    };
+            setLoading(false);
+        };
 
-    fetchActivities();
-  }, [session]);
+        if (session?.user) {
+            fetchMyPosts();
+        }
+    }, [session]);
 
-  const renderContent = () => {
-    if (loading) return <p>Loading activity...</p>;
+    return (
+        <div className="modal-overlay" onClick={onClose}>
+            <div
+                className="modal-content activity-modal"
+                onClick={(e) => e.stopPropagation()}
+            >
+                <div className="modal-header">
+                    <h3>Your Activity</h3>
+                    <button onClick={onClose} className="close-btn">
+                        &times;
+                    </button>
+                </div>
 
-    switch (activeTab) {
-      case 'Posts':
-        return activities.posts.length > 0 ? (
-          activities.posts.map(post => <div key={`post-${post.id}`} className="activity-item">{post.title}</div>)
-        ) : <p>You haven't posted anything yet.</p>;
-      case 'Likes':
-        return activities.likes.length > 0 ? (
-          activities.likes.map(like => <div key={`like-${like.id}`} className="activity-item">You liked: <strong>{like.civic_issues.title}</strong></div>)
-        ) : <p>You haven't liked anything yet.</p>;
-      case 'Comments':
-        return activities.comments.length > 0 ? (
-          activities.comments.map(comment => <div key={`comment-${comment.id}`} className="activity-item">You commented: "{comment.content}"</div>)
-        ) : <p>You haven't commented on anything yet.</p>;
-      default:
-        return null;
-    }
-  };
-
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content activity-modal" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <h3>Your Activity</h3>
-          <button onClick={onClose} className="close-btn">&times;</button>
+                <div className="modal-body">
+                    <h4>My Posts</h4>
+                    {loading ? (
+                        <p>Loading your posts...</p>
+                    ) : myPosts.length === 0 ? (
+                        <p>You haven't posted any issues yet.</p>
+                    ) : (
+                        <div className="posts-list">
+                            {myPosts.map((post) => (
+                                <div key={post.id} className="activity-post-item">
+                                    <span className="post-title">{post.title}</span>
+                                    <span
+                                        className={`status-badge status-${post.status?.toLowerCase()}`}
+                                    >
+                                        {post.status}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
         </div>
-        <div className="activity-tabs">
-          <button onClick={() => setActiveTab('Posts')} className={activeTab === 'Posts' ? 'active' : ''}>Posts</button>
-          <button onClick={() => setActiveTab('Likes')} className={activeTab === 'Likes' ? 'active' : ''}>Likes</button>
-          <button onClick={() => setActiveTab('Comments')} className={activeTab === 'Comments' ? 'active' : ''}>Comments</button>
-        </div>
-        <div className="activity-content">
-          {renderContent()}
-        </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default ActivityModal;
-
