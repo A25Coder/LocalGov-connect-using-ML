@@ -1,7 +1,7 @@
 // src/components/CommentSection.jsx
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
-import "../css/CommentSection.css"; // Is file ko agle step mein banayenge
+import "../css/CommentSection.css";
 
 const CommentSection = ({ issueId, session }) => {
   const [comments, setComments] = useState([]);
@@ -14,7 +14,7 @@ const CommentSection = ({ issueId, session }) => {
       const { data, error } = await supabase
         .from('comments')
         .select('*')
-        .eq('issue_id', issueId) // Sirf is issue ke comments laao
+        .eq('issue_id', issueId)
         .order('created_at', { ascending: true });
 
       if (error) {

@@ -12,7 +12,7 @@ const IssueFeed = () => {
   const [selectedIssueId, setSelectedIssueId] = useState(null);
   const [likedIssues, setLikedIssues] = useState(new Set());
   const [sortBy, setSortBy] = useState('created_at');
-  const [viewedIssues, setViewedIssues] = useState(new Set()); // Track viewed issues in this session
+  const [viewedIssues, setViewedIssues] = useState(new Set()); // Track viewed issues
 
   useEffect(() => {
     const setupFeed = async () => {
@@ -81,17 +81,12 @@ const IssueFeed = () => {
     const isOpening = selectedIssueId !== issueId;
     setSelectedIssueId(isOpening ? issueId : null);
 
-    // Agar comment section is session mein pehli baar khul raha hai, to view count badhao
+    // Increase view count only once per session
     if (isOpening && !viewedIssues.has(issueId)) {
-      // UI mein turant update dikhao
       setIssues(prev => prev.map(issue => 
         issue.id === issueId ? { ...issue, view_count: (issue.view_count || 0) + 1 } : issue
       ));
-      
-      // Is issue ko 'viewed' mark karo taaki dobara count na ho
       setViewedIssues(prev => new Set(prev).add(issueId));
-
-      // Ab database mein update karo
       await supabase.rpc('increment_view_count', { issue_id_to_view: issueId });
     }
   };
@@ -116,9 +111,13 @@ const IssueFeed = () => {
         issues.map((issue) => {
           let publicImageUrl = null;
           if (issue.image_url) {
-            const { data } = supabase.storage.from('issue_images').getPublicUrl(issue.image_url);
+            // ✅ Correct bucket name "images"
+            const { data } = supabase.storage
+              .from('images')
+              .getPublicUrl(issue.image_url); 
             if (data) publicImageUrl = data.publicUrl;
           }
+
           return (
             <div key={issue.id} className="post-card">
               <div className="post-header">
@@ -169,4 +168,3 @@ const IssueFeed = () => {
 };
 
 export default IssueFeed;
-
