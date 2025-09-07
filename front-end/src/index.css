@@ -1,15 +1,36 @@
 /* src/index.css */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
-/* -- CSS Variables: Yahan hum poore app ke liye colors set kar rahe hain -- */
+/* -- Light Mode Variables (Default) -- */
 :root {
-  --primary-color: #3B82F6; /* Professional Blue */
-  --background-color: #F8FAFC; /* Light Grey Background */
-  --card-background: #FFFFFF;
-  --text-color: #1E293B;
-  --text-light: #64748B;
-  --border-color: #E2E8F0;
-  --success-color: #10B981;
-  --danger-color: #EF4444;
+  --primary-color: #2563eb;
+
+  /* Gradient Colors */
+  --background-color: #f8fafc;       /* Start */
+  --background-color-end: #e2e8f0;   /* End */
+
+  --card-background: #ffffff;
+  --text-color: #1e293b;
+  --text-light: #64748b;
+  --border-color: #e2e8f0;
+  --success-color: #16a34a;
+  --danger-color: #dc2626;
+}
+
+/* -- Dark Mode Variables -- */
+[data-theme='dark'] {
+  --primary-color: #3b82f6;
+
+  /* Dark Gradient Colors */
+  --background-color: #0f172a;       /* Start */
+  --background-color-end: #1e293b;   /* End */
+
+  --card-background: #1e293b;
+  --text-color: #f8fafc;
+  --text-light: #94a3b8;
+  --border-color: #334155;
+  --success-color: #22c55e;
+  --danger-color: #ef4444;
 }
 
 /* -- Global Styles -- */
@@ -20,16 +41,29 @@
 }
 
 body {
-  font-family: 'Poppins', sans-serif; /* Naya font yahan apply kiya hai */
-  background-color: var(--background-color);
+  font-family: 'Poppins', sans-serif;
   color: var(--text-color);
+
+  /* === Professional Gradient === */
+  background-color: var(--background-color); /* Fallback */
+  background-image: linear-gradient(
+    170deg,
+    var(--background-color) 0%,
+    var(--background-color-end) 100%
+  );
+
+  background-attachment: fixed; /* Scroll par fix rahe */
+  min-height: 100vh;
+  transition: background-color 0.3s ease,
+              color 0.3s ease,
+              background-image 0.3s ease;
 }
-/* src/index.css */
-/* Dark Mode Styles */
-[data-theme='dark'] {
-  --background-color: #1E293B;
-  --card-background: #334155;
-  --text-color: #F8FAFC;
-  --text-light: #94A3B8;
-  --border-color: #475569;
+
+/* -- Dark Mode Gradient -- */
+[data-theme='dark'] body {
+  background-image: linear-gradient(
+    170deg,
+    var(--background-color) 0%,
+    var(--background-color-end) 100%
+  );
 }

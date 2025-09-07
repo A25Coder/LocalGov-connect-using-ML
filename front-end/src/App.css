@@ -1,4 +1,3 @@
-/* ---------------- Root Theme Variables ---------------- */
 :root {
   --text-color: #1e293b;
   --text-light: #64748b;
@@ -9,7 +8,18 @@
   --danger-color: #dc2626;
 }
 
-/* ---------------- Layout ---------------- */
+/* Dark theme variables */
+[data-theme="dark"] {
+  --text-color: #f1f5f9;
+  --text-light: #94a3b8;
+  --card-background: #1e293b;
+  --border-color: #334155;
+  --primary-color: #3b82f6;
+  --success-color: #22c55e;
+  --danger-color: #ef4444;
+}
+
+/* Layout */
 .app-container {
   display: flex;
   flex-direction: column;
@@ -18,32 +28,24 @@
 
 .main-content-wrapper {
   width: 100%;
-  max-width: 640px;  /* content ki max width */
-  margin: 0 auto;    /* center align */
+  max-width: 640px;
+  margin: 0 auto;
   flex-grow: 1;
-  overflow-y: auto;  /* scrollable content */
+  overflow-y: auto;
 }
 
 .screen-content {
   flex-grow: 1;
-  padding: 1.5rem;
+  padding: 1rem 1.5rem;
 }
 
-/* ---------------- Header ---------------- */
-.screen-content h1 {
-  font-size: 2.25rem;
-  font-weight: 700;
-  color: var(--text-color);
-  margin-bottom: 1.5rem;
-}
-
-/* ---------------- Bottom Navigation ---------------- */
+/* Bottom Navigation */
 .bottom-nav {
   display: flex;
   justify-content: space-around;
   background-color: var(--card-background);
   border-top: 1px solid var(--border-color);
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
   padding: 0.5rem 0;
 }
 
@@ -60,25 +62,11 @@
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.nav-button .icon {
-  font-size: 1.5rem;
-}
+.nav-button .icon { font-size: 1.5rem; }
+.nav-button .label { font-size: 0.75rem; margin-top: 0.25rem; }
+.nav-button.active { color: var(--primary-color); }
 
-.nav-button .label {
-  font-size: 0.75rem;
-  margin-top: 0.25rem;
-}
-
-/* Active button style */
-.nav-button.active {
-  color: var(--primary-color);
-}
-
-.nav-button:hover {
-  background-color: #f1f5f9;
-}
-
-/* ---------------- Reusable Buttons ---------------- */
+/* Buttons */
 .btn {
   padding: 0.75rem 1.5rem;
   border: none;
@@ -90,16 +78,6 @@
   transition: opacity 0.2s ease;
 }
 
-.btn:hover {
-  opacity: 0.9;
-}
-
-.btn-primary {
-  background-color: var(--success-color);
-  color: white;
-}
-
-.btn-danger {
-  background-color: var(--danger-color);
-  color: white;
-}
+.btn:hover { opacity: 0.9; }
+.btn-primary { background-color: var(--success-color); color: white; }
+.btn-danger { background-color: var(--danger-color); color: white; }

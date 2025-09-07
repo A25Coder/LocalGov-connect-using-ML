@@ -1,81 +1,115 @@
 // src/App.jsx
 import { useState, useEffect } from 'react';
-import { supabase } from './supabaseClient'; // Path theek kar diya gaya hai
+import { Routes, Route, NavLink, useLocation } from 'react-router-dom';
+import { supabase } from './supabaseClient';
 import './App.css';
-import Post from './components/Post';
-import Profile from './components/Profile';
+
+// Components
+import Header from './components/Header';
+import SideNav from './components/SideNav';
 import IssueFeed from './components/IssueFeed';
-import Auth from './components/Auth';
-import Notifications from './components/Notifications';
 import MapView from './components/MapView';
+import Post from './components/Post';
+import Notifications from './components/Notifications';
+import Profile from './components/Profile';
+import Auth from './components/Auth';
+import IssueDetailPage from './components/IssueDetailPage'; // Naya page
 
 function App() {
-  const [activeTab, setActiveTab] = useState('Home');
   const [session, setSession] = useState(null);
+  const [isNavOpen, setNavOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const location = useLocation();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-    });
+    const setupUser = async () => {
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      setSession(currentSession);
+
+      if (currentSession) {
+        const { count, error } = await supabase
+          .from('notifications')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', currentSession.user.id)
+          .eq('is_read', false);
+
+        if (!error) setUnreadCount(count);
+      }
+    };
+
+    setupUser();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setSession(session);
-      }
+      (_event, session) => setSession(session)
     );
 
     return () => subscription.unsubscribe();
   }, []);
 
-  const tabs = [
-    { name: 'Home', icon: '🏠' },
-    { name: 'Map', icon: '🗺️' },
-    { name: 'Post', icon: '➕' },
-    { name: 'Notifications', icon: '🔔' },
-    { name: 'Profile', icon: '👤' },
-  ];
+  // Page Title
+  const getPageTitle = () => {
+    const path = location.pathname;
+    if (path === '/') return 'Home';
+    if (path.startsWith('/issue/')) return 'Issue Details';
+    return path.charAt(1).toUpperCase() + path.slice(2);
+  };
 
-  const renderTabContent = () => {
-    if (!session && (activeTab === 'Post' || activeTab === 'Profile' || activeTab === 'Map')) {
-      return <Auth />;
-    }
-
-    switch (activeTab) {
-      case 'Home':
-        return <IssueFeed />;
-      case 'Map':
-        return <MapView />;
-      case 'Post':
-        return <Post />;
-      case 'Notifications':
-        return <Notifications />;
-      case 'Profile':
-        return <Profile session={session} />;
-      default:
-        return <p>Unknown tab.</p>;
-    }
+  // Protected Routes
+  const ProtectedRoute = ({ children }) => {
+    if (!session) return <Auth />;
+    return children;
   };
 
   return (
     <div className="app-container">
+      <Header
+        title={getPageTitle()}
+        onMenuClick={() => setNavOpen(true)}
+        unreadCount={unreadCount}
+      />
+
+      {/* ✅ setActiveTab prop hata diya */}
+      <SideNav
+        isOpen={isNavOpen}
+        onClose={() => setNavOpen(false)}
+      />
+
       <main className="main-content-wrapper">
         <div className="screen-content">
-          <h1>{activeTab}</h1>
-          {renderTabContent()}
+          <Routes>
+            <Route path="/" element={<IssueFeed />} />
+            <Route path="/map" element={<MapView />} />
+            <Route
+              path="/post"
+              element={<ProtectedRoute><Post session={session} /></ProtectedRoute>}
+            />
+            <Route
+              path="/notifications"
+              element={<ProtectedRoute><Notifications session={session} setUnreadCount={setUnreadCount} /></ProtectedRoute>}
+            />
+            <Route
+              path="/profile"
+              element={<ProtectedRoute><Profile session={session} /></ProtectedRoute>}
+            />
+            <Route path="/issue/:issueId" element={<IssueDetailPage session={session} />} />
+          </Routes>
         </div>
       </main>
 
+      {/* Bottom Navigation */}
       <nav className="bottom-nav">
-        {tabs.map((tab) => (
-          <button
-            key={tab.name}
-            className={`nav-button ${activeTab === tab.name ? 'active' : ''}`}
-            onClick={() => setActiveTab(tab.name)}
-          >
-            <span className="icon">{tab.icon}</span>
-            <span className="label">{tab.name}</span>
-          </button>
-        ))}
+        <NavLink to="/" className="nav-button">
+          <span className="icon">🏠</span>
+          <span className="label">Home</span>
+        </NavLink>
+        <NavLink to="/post" className="nav-button">
+          <span className="icon">➕</span>
+          <span className="label">Post</span>
+        </NavLink>
+        <NavLink to="/profile" className="nav-button">
+          <span className="icon">👤</span>
+          <span className="label">Profile</span>
+        </NavLink>
       </nav>
     </div>
   );

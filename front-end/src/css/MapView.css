@@ -1,0 +1,50 @@
+/* src/css/MapView.css */
+.map-page-container {
+    padding: 20px;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+.map-page-container h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: var(--text-primary);
+}
+
+.map-wrapper {
+    height: 75vh; /* Map ki height set karein */
+    width: 100%;
+    border-radius: 12px;
+    overflow: hidden; /* Yeh zaroori hai taki map corners rounded rahen */
+    border: 3px solid #e2e8f0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.leaflet-popup-content h3 {
+    margin: 0 0 8px 0;
+    font-size: 1.1rem;
+    color: #1a202c;
+}
+
+.leaflet-popup-content p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #4a5568;
+}
+
+.map-feedback {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 80vh;
+    font-size: 1.5rem;
+    color: var(--text-secondary);
+}
+
+.map-feedback.error {
+    color: #e53e3e;
+    text-align: center;
+    padding: 20px;
+}
