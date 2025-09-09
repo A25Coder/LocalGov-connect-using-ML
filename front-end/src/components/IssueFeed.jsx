@@ -4,7 +4,7 @@ import { supabase } from '../supabaseClient';
 import '../css/IssueFeed.css';
 import { Link } from 'react-router-dom';
 
-// ✅ Time ago utility
+// Time ago utility
 const timeAgo = (date) => {
   const seconds = Math.floor((new Date() - new Date(date)) / 1000);
   let interval = seconds / 31536000;
@@ -20,6 +20,28 @@ const timeAgo = (date) => {
   return Math.floor(seconds) + "s ago";
 };
 
+// Severity helper
+const getSeverityInfo = (severity) => {
+  switch (severity?.toLowerCase()) {
+    case 'high':
+      return { label: 'Critical', className: 'severity-high' };
+    case 'medium':
+      return { label: 'Needs Attention', className: 'severity-medium' };
+    default:
+      return { label: 'Minor', className: 'severity-low' };
+  }
+};
+
+// Categories for filtering
+const categories = [
+  { id: "road", name: "Roads & Potholes" },
+  { id: "water", name: "Water" },
+  { id: "electricity", name: "Electricity" },
+  { id: "sanitation", name: "Sanitation" },
+  { id: "nature", name: "Nature" },
+  { id: "other", name: "Other" },
+];
+
 const IssueFeed = () => {
   const [issues, setIssues] = useState([]);
   const [filteredIssues, setFilteredIssues] = useState([]);
@@ -27,35 +49,47 @@ const IssueFeed = () => {
   const [error, setError] = useState(null);
   const [session, setSession] = useState(null);
   const [likedIssues, setLikedIssues] = useState(new Set());
-  const [viewedIssues, setViewedIssues] = useState(new Set()); 
+  const [profiles, setProfiles] = useState({}); // user_id -> { name, avatar }
 
-  // ✅ Sorting & Filters
+  // Sorting & Filters
   const [sortBy, setSortBy] = useState('created_at');
-  const [searchQuery, setSearchQuery] = useState('');  // ✅ FIX: Declare state
-  const [categoryFilter, setCategoryFilter] = useState('All'); // ✅ FIX
-  const [statusFilter, setStatusFilter] = useState('All');     // ✅ FIX
+  const [categoryFilter, setCategoryFilter] = useState('All');
+  const [statusFilter, setStatusFilter] = useState('All');
 
-  // ✅ Fetch Issues + Likes
+  // Fetch issues and likes
   useEffect(() => {
     const setupFeed = async () => {
       try {
         const { data: { session: currentSession } } = await supabase.auth.getSession();
         setSession(currentSession);
 
+        // Fetch issues
         const { data: issuesData, error: issuesError } = await supabase
           .from('civic_issues')
           .select('*')
           .order(sortBy, { ascending: false });
-
         if (issuesError) throw issuesError;
         setIssues(issuesData || []);
 
+        // Fetch profiles
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('id, full_name, avatar_url');
+        if (profilesData) {
+          const profileMap = {};
+          profilesData.forEach(p => {
+            profileMap[p.id] = { name: p.full_name, avatar: p.avatar_url };
+          });
+          setProfiles(profileMap);
+        }
+
+        // Fetch likes for current user
         if (currentSession) {
-          const { data: likesData, error: likesError } = await supabase
+          const { data: likesData } = await supabase
             .from('likes')
             .select('issue_id')
             .eq('user_id', currentSession.user.id);
-          if (likesError) throw likesError;
+
           setLikedIssues(new Set(likesData.map(like => like.issue_id)));
         }
       } catch (err) {
@@ -68,17 +102,9 @@ const IssueFeed = () => {
     setupFeed();
   }, [sortBy]);
 
-  // ✅ Filtering logic
+  // Filtering logic
   useEffect(() => {
     let result = issues;
-
-    // Search
-    if (searchQuery) {
-      result = result.filter(issue =>
-        issue.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (issue.author_name && issue.author_name.toLowerCase().includes(searchQuery.toLowerCase()))
-      );
-    }
 
     // Category filter
     if (categoryFilter !== 'All') {
@@ -91,34 +117,29 @@ const IssueFeed = () => {
     }
 
     setFilteredIssues(result);
-  }, [searchQuery, categoryFilter, statusFilter, issues]);
+  }, [categoryFilter, statusFilter, issues]);
 
-  // ✅ Like toggle
+  // Like toggle
   const handleLike = async (issueId) => {
     if (!session) return;
     const { data, error } = await supabase.rpc('toggle_like', { issue_id_to_toggle: issueId });
-    if (error) {
-      console.error('Error toggling like:', error);
-    } else {
+    if (error) console.error('Error toggling like:', error);
+    else {
       const { liked, new_like_count } = data;
-      setIssues(prevIssues =>
-        prevIssues.map(issue =>
-          issue.id === issueId ? { ...issue, like_count: new_like_count } : issue
-        )
+      setIssues(prev =>
+        prev.map(issue => issue.id === issueId ? { ...issue, like_count: new_like_count } : issue)
       );
-      setLikedIssues(prevLiked => {
-        const newLiked = new Set(prevLiked);
-        if (liked) newLiked.add(issueId);
-        else newLiked.delete(issueId);
-        return newLiked;
+      setLikedIssues(prev => {
+        const newSet = new Set(prev);
+        liked ? newSet.add(issueId) : newSet.delete(issueId);
+        return newSet;
       });
     }
   };
 
-  if (loading) return <p style={{textAlign: 'center', padding: '2rem'}}>Loading issues...</p>;
-  if (error) return <p style={{color: 'red', textAlign: 'center'}}>{error}</p>;
+  if (loading) return <p style={{ textAlign: 'center', padding: '2rem' }}>Loading issues...</p>;
+  if (error) return <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>;
 
-  // ✅ Main Render
   return (
     <div className="issue-feed-container">
       {/* Sorting */}
@@ -128,27 +149,13 @@ const IssueFeed = () => {
         <button onClick={() => setSortBy('view_count')} className={sortBy === 'view_count' ? 'active' : ''}>Most Viewed</button>
       </div>
 
-      {/* Search */}
-      <div className="search-bar-container">
-        <input
-          type="text"
-          placeholder="Search issues by title or author..."
-          className="search-input"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-      </div>
-
       {/* Filters */}
       <div className="filters-container">
         <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="filter-select">
           <option value="All">All Categories</option>
-          <option value="Roads & Potholes">Roads & Potholes</option>
-          <option value="Waste Management">Waste Management</option>
-          <option value="Water & Sewage">Water & Sewage</option>
-          <option value="Electricity & Lights">Electricity & Lights</option>
-          <option value="Public Parks">Public Parks</option>
-          <option value="Other">Other</option>
+          {categories.map(cat => (
+            <option key={cat.id} value={cat.id}>{cat.name}</option>
+          ))}
         </select>
 
         <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="filter-select">
@@ -163,26 +170,45 @@ const IssueFeed = () => {
       {filteredIssues.length === 0 ? (
         <div style={{ textAlign: 'center', marginTop: '4rem' }}>
           <h2>No issues found.</h2>
-          <p style={{ color: '#64748B' }}>Try changing the search, filters or sort order.</p>
+          <p style={{ color: '#64748B' }}>Try changing the filters or sort order.</p>
         </div>
       ) : (
-        filteredIssues.map((issue) => {
-          let publicImageUrl = null;
-          if (issue.image_url) {
-            const { data } = supabase.storage.from('issue_images').getPublicUrl(issue.image_url);
-            if (data) publicImageUrl = data.publicUrl;
-          }
+        filteredIssues.map(issue => {
+          const severityInfo = getSeverityInfo(issue.severity);
+          const profile = profiles[issue.user_id] || {};
           return (
             <div key={issue.id} className="post-card">
+              {/* Severity badge */}
+              {issue.severity && (
+                <span className={`severity-badge-top ${severityInfo.className}`}>
+                  {severityInfo.label}
+                </span>
+              )}
+
+              {/* Header with avatar and name */}
               <div className="post-header">
-                <div className="header-avatar">{issue.name ? issue.name[0].toUpperCase() : 'A'}</div>
-                <div className="header-name">{issue.name || 'Anonymous'}</div>
+                <div className="header-avatar">
+                  {profile.avatar ? (
+                    <img src={profile.avatar} alt={profile.name} className="avatar-img" />
+                  ) : (
+                    <div className="avatar-placeholder">{profile.name ? profile.name[0] : 'A'}</div>
+                  )}
+                </div>
+                <div className="header-name">{profile.name || 'Anonymous'}</div>
               </div>
 
+              {/* Issue image */}
               {issue.image_url && (
                 <img src={issue.image_url} alt={issue.title} className="post-image" />
               )}
 
+              {/* Title & description */}
+              <div className="post-content">
+                <h4 className="post-title">{issue.title}</h4>
+                <p className="post-description">{issue.description}</p>
+              </div>
+
+              {/* Actions */}
               <div className="post-actions">
                 <button
                   onClick={() => handleLike(issue.id)}
@@ -192,20 +218,13 @@ const IssueFeed = () => {
                   {likedIssues.has(issue.id) ? '❤️' : '♡'}
                 </button>
                 <Link to={`/issue/${issue.id}`} className="action-btn">💬</Link>
-                <button className="action-btn">➢</button>
               </div>
 
+              {/* Stats & timestamp */}
               <div className="post-stats">
                 <span>{issue.like_count || 0} likes</span>
                 <span>{issue.view_count || 0} views</span>
-              </div>
-
-              <div className="post-description">
-                <strong>{issue.author_name || 'Anonymous'}</strong> {issue.title}
-              </div>
-
-              <div className="post-timestamp">
-                {timeAgo(issue.created_at)}
+                <span className="post-timestamp">{timeAgo(issue.created_at)}</span>
               </div>
 
               <Link to={`/issue/${issue.id}`} className="post-comments-link">

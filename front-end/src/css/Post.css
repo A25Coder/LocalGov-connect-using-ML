@@ -1,6 +1,6 @@
 /* src/css/Post.css */
 .form-container {
-  max-width: 600px;
+  max-width: 900px;
   margin: 1rem auto;
   padding: 2rem;
   background-color: var(--card-background);
@@ -108,13 +108,137 @@
 }
 
 .error-message {
-  color: red;
+  color: #ef4444;
+  background-color: #fee2e2;
+  border: 1px solid #fca5a5;
+  padding: 0.75rem;
+  border-radius: 8px;
   text-align: center;
   margin-bottom: 1rem;
 }
 
 .success-message {
-  color: green;
+  color: #166534;
+  background-color: #dcfce7;
+  border: 1px solid #86efac;
+  padding: 0.75rem;
+  border-radius: 8px;
   text-align: center;
   margin-bottom: 1rem;
+}
+
+/* === NEW STYLES FOR SUBMISSION PREVIEW === */
+
+.submitted-post-preview {
+  text-align: center;
+}
+
+.submitted-post-preview h3 {
+  color: #16a34a; /* Green */
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.submitted-post-preview p {
+  color: var(--text-light);
+  margin-bottom: 1.5rem;
+}
+
+.post-card-preview {
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  text-align: left;
+  margin-bottom: 1.5rem;
+  background-color: #fff;
+}
+
+.post-image-preview {
+  width: 100%;
+  max-height: 300px;
+  object-fit: cover;
+}
+
+.post-content-preview {
+  padding: 1rem;
+}
+
+.post-header-preview {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.post-header-preview h4 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: var(--text-color);
+}
+
+.severity-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: white;
+}
+
+.severity-high {
+  background-color: #dc2626; /* Red */
+}
+
+.severity-medium {
+  background-color: #f59e0b; /* Amber */
+}
+
+.severity-low {
+  background-color: #2563eb; /* Blue */
+}
+
+.post-author-preview {
+  font-size: 0.9rem;
+  color: var(--text-light);
+  margin: 0.5rem 0 !important;
+}
+
+.post-timestamp-preview {
+  font-size: 0.8rem;
+  color: #9ca3af;
+  margin-top: 0.5rem !important;
+}
+
+.post-another-btn {
+  width: 100%;
+  background-color: transparent;
+  color: var(--primary-color);
+  padding: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border: 2px solid var(--primary-color);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.post-another-btn:hover {
+  background-color: var(--primary-color);
+  color: white;
+}
+/* Top-positioned severity badge */
+.severity-badge-top {
+  display: inline-block;
+  padding: 0.35rem 0.9rem;
+  border-bottom-right-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: white;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* Ensure card is relative so badge positions correctly */
+.post-card-preview {
+  position: relative;
 }
