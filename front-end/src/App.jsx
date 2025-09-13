@@ -1,4 +1,3 @@
-// src/App.jsx
 import { useState, useEffect } from 'react';
 import { Routes, Route, NavLink, useLocation } from 'react-router-dom';
 import { supabase } from './supabaseClient';
@@ -13,10 +12,12 @@ import Post from './components/Post';
 import Notifications from './components/Notifications';
 import Profile from './components/Profile';
 import Auth from './components/Auth';
-import IssueDetailPage from './components/IssueDetailPage'; // Naya page
+import IssueDetailPage from './components/IssueDetailPage';
+import GovDashboard from './components/GovDashboard';
 
 function App() {
   const [session, setSession] = useState(null);
+  const [profile, setProfile] = useState(null); // ✅ profile info
   const [isNavOpen, setNavOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const location = useLocation();
@@ -27,6 +28,15 @@ function App() {
       setSession(currentSession);
 
       if (currentSession) {
+        // Fetch profile including gov_category
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('id, full_name, gov_category')
+          .eq('id', currentSession.user.id)
+          .single();
+        setProfile(profileData);
+
+        // Fetch unread notifications
         const { count, error } = await supabase
           .from('notifications')
           .select('*', { count: 'exact', head: true })
@@ -51,6 +61,7 @@ function App() {
     const path = location.pathname;
     if (path === '/') return 'Home';
     if (path.startsWith('/issue/')) return 'Issue Details';
+    if (path.startsWith('/gov')) return 'Gov Dashboard';
     return path.charAt(1).toUpperCase() + path.slice(2);
   };
 
@@ -68,7 +79,6 @@ function App() {
         unreadCount={unreadCount}
       />
 
-      {/* ✅ setActiveTab prop hata diya */}
       <SideNav
         isOpen={isNavOpen}
         onClose={() => setNavOpen(false)}
@@ -91,6 +101,10 @@ function App() {
               path="/profile"
               element={<ProtectedRoute><Profile session={session} /></ProtectedRoute>}
             />
+            <Route
+              path="/gov"
+              element={<ProtectedRoute><GovDashboard session={session} profile={profile} /></ProtectedRoute>}
+            />
             <Route path="/issue/:issueId" element={<IssueDetailPage session={session} />} />
           </Routes>
         </div>
@@ -102,10 +116,19 @@ function App() {
           <span className="icon">🏠</span>
           <span className="label">Home</span>
         </NavLink>
-        <NavLink to="/post" className="nav-button">
-          <span className="icon">➕</span>
-          <span className="label">Post</span>
-        </NavLink>
+
+        {profile?.gov_category ? (
+          <NavLink to="/gov" className="nav-button">
+            <span className="icon">⚙️</span>
+            <span className="label">Gov</span>
+          </NavLink>
+        ) : (
+          <NavLink to="/post" className="nav-button">
+            <span className="icon">➕</span>
+            <span className="label">Post</span>
+          </NavLink>
+        )}
+
         <NavLink to="/profile" className="nav-button">
           <span className="icon">👤</span>
           <span className="label">Profile</span>

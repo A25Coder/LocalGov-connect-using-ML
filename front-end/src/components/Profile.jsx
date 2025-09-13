@@ -13,21 +13,52 @@ const Profile = ({ session }) => {
   const [newPassword, setNewPassword] = useState('');
   const [uploading, setUploading] = useState(false);
 
-  // ✅ Fetch profile
+  // ✅ Fetch profile (upsert if missing)
   const fetchProfile = async () => {
     if (!session) return;
     setLoading(true);
 
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', session.user.id)
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .maybeSingle();
 
-    if (error) {
-      console.error("Error fetching profile:", error.message);
-    } else {
-      setProfile(data || {});
+      if (error) {
+        console.error("Error fetching profile:", error.message);
+      }
+
+      // If no profile exists, create one using upsert
+      if (!data) {
+        const defaultProfile = {
+          id: session.user.id,
+          full_name: session.user.email, // default to email
+          avatar_url: null,
+          gov_category: null, // default for normal users
+          created_at: new Date(),
+          updated_at: new Date(),
+        };
+
+        const { error: upsertError } = await supabase
+          .from('profiles')
+          .upsert(defaultProfile, { onConflict: ['id'] });
+
+        if (upsertError) {
+          console.error("Error creating profile:", upsertError.message);
+        }
+      }
+
+      // Fetch again to ensure profile is loaded
+      const { data: refreshedData } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .maybeSingle();
+
+      setProfile(refreshedData);
+    } catch (err) {
+      console.error("Unexpected error:", err);
     }
 
     setLoading(false);
@@ -42,16 +73,18 @@ const Profile = ({ session }) => {
     e.preventDefault();
     const newName = e.target.fullName.value;
 
-    const { error } = await supabase.from('profiles').upsert({
-      id: session.user.id,
-      full_name: newName,
-      updated_at: new Date(),
-    });
+    const { error } = await supabase
+      .from('profiles')
+      .upsert({
+        id: session.user.id,
+        full_name: newName,
+        updated_at: new Date(),
+      }, { onConflict: ['id'] });
 
     if (error) {
       alert("Error updating profile: " + error.message);
     } else {
-      await fetchProfile(); // reload from DB
+      await fetchProfile();
       setEditModalOpen(false);
     }
   };
@@ -80,7 +113,7 @@ const Profile = ({ session }) => {
 
     await supabase
       .from('profiles')
-      .update({ avatar_url: urlData.publicUrl })
+      .update({ avatar_url: urlData.publicUrl, updated_at: new Date() })
       .eq('id', session.user.id);
 
     setProfile((prev) => ({ ...prev, avatar_url: urlData.publicUrl }));
@@ -126,6 +159,11 @@ const Profile = ({ session }) => {
         />
         <h2 className="profile-name">{profile?.full_name || 'Set Your Name'}</h2>
         <p className="profile-email">{session.user.email}</p>
+        {profile?.gov_category && (
+          <p className="profile-gov-category">
+            Role: {profile.gov_category.toUpperCase()} Official
+          </p>
+        )}
       </div>
 
       {/* Account Settings */}

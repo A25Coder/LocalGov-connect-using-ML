@@ -23,16 +23,12 @@ const timeAgo = (date) => {
 // Severity helper
 const getSeverityInfo = (severity) => {
   switch (severity?.toLowerCase()) {
-    case 'high':
-      return { label: 'Critical', className: 'severity-high' };
-    case 'medium':
-      return { label: 'Needs Attention', className: 'severity-medium' };
-    default:
-      return { label: 'Minor', className: 'severity-low' };
+    case 'high': return { label: 'Critical', className: 'severity-high' };
+    case 'medium': return { label: 'Needs Attention', className: 'severity-medium' };
+    default: return { label: 'Minor', className: 'severity-low' };
   }
 };
 
-// Categories for filtering
 const categories = [
   { id: "road", name: "Roads & Potholes" },
   { id: "water", name: "Water" },
@@ -49,32 +45,51 @@ const IssueFeed = () => {
   const [error, setError] = useState(null);
   const [session, setSession] = useState(null);
   const [likedIssues, setLikedIssues] = useState(new Set());
-  const [profiles, setProfiles] = useState({}); // user_id -> { name, avatar }
-
-  // Sorting & Filters
+  const [profiles, setProfiles] = useState({});
   const [sortBy, setSortBy] = useState('created_at');
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [govCategory, setGovCategory] = useState(null);
 
-  // Fetch issues and likes
   useEffect(() => {
     const setupFeed = async () => {
       try {
+        // 1️⃣ Get current session
         const { data: { session: currentSession } } = await supabase.auth.getSession();
         setSession(currentSession);
 
-        // Fetch issues
-        const { data: issuesData, error: issuesError } = await supabase
+        if (!currentSession) return;
+
+        // 2️⃣ Get profile to check gov_category
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('id, full_name, avatar_url, gov_category')
+          .eq('id', currentSession.user.id)
+          .maybeSingle();
+
+        const userGovCategory = profileData?.gov_category || null;
+        setGovCategory(userGovCategory);
+
+        // 3️⃣ Fetch issues
+        let query = supabase
           .from('civic_issues')
           .select('*')
           .order(sortBy, { ascending: false });
+
+        // If gov user, only fetch issues in their category
+        if (userGovCategory) {
+          query = query.eq('category', userGovCategory);
+        }
+
+        const { data: issuesData, error: issuesError } = await query;
         if (issuesError) throw issuesError;
         setIssues(issuesData || []);
 
-        // Fetch profiles
+        // 4️⃣ Fetch all profiles to map avatars
         const { data: profilesData } = await supabase
           .from('profiles')
           .select('id, full_name, avatar_url');
+
         if (profilesData) {
           const profileMap = {};
           profilesData.forEach(p => {
@@ -83,15 +98,14 @@ const IssueFeed = () => {
           setProfiles(profileMap);
         }
 
-        // Fetch likes for current user
-        if (currentSession) {
-          const { data: likesData } = await supabase
-            .from('likes')
-            .select('issue_id')
-            .eq('user_id', currentSession.user.id);
+        // 5️⃣ Fetch liked issues by current user
+        const { data: likesData } = await supabase
+          .from('likes')
+          .select('issue_id')
+          .eq('user_id', currentSession.user.id);
 
-          setLikedIssues(new Set(likesData.map(like => like.issue_id)));
-        }
+        setLikedIssues(new Set(likesData.map(like => like.issue_id)));
+
       } catch (err) {
         console.error("Error loading feed:", err);
         setError("Failed to load issues. Please refresh the page.");
@@ -99,41 +113,49 @@ const IssueFeed = () => {
         setLoading(false);
       }
     };
+
     setupFeed();
   }, [sortBy]);
 
-  // Filtering logic
+  // Apply client-side filters
   useEffect(() => {
     let result = issues;
-
-    // Category filter
-    if (categoryFilter !== 'All') {
-      result = result.filter(issue => issue.category === categoryFilter);
-    }
-
-    // Status filter
-    if (statusFilter !== 'All') {
-      result = result.filter(issue => issue.status === statusFilter);
-    }
-
+    if (categoryFilter !== 'All') result = result.filter(issue => issue.category === categoryFilter);
+    if (statusFilter !== 'All') result = result.filter(issue => issue.status === statusFilter);
     setFilteredIssues(result);
   }, [categoryFilter, statusFilter, issues]);
 
-  // Like toggle
+  // Handle like/unlike
   const handleLike = async (issueId) => {
     if (!session) return;
-    const { data, error } = await supabase.rpc('toggle_like', { issue_id_to_toggle: issueId });
-    if (error) console.error('Error toggling like:', error);
-    else {
-      const { liked, new_like_count } = data;
+    const userId = session.user.id;
+
+    try {
+      const { data, error } = await supabase.rpc('toggle_like', {
+        p_post_id: issueId,
+        p_user_id: userId
+      });
+
+      if (error) return console.error('Error toggling like:', error);
+
+      const result = Array.isArray(data) ? data[0] : data;
+      if (!result) return;
+
+      const { liked, new_like_count } = result;
+
       setIssues(prev =>
-        prev.map(issue => issue.id === issueId ? { ...issue, like_count: new_like_count } : issue)
+        prev.map(issue =>
+          issue.id === issueId ? { ...issue, like_count: new_like_count } : issue
+        )
       );
+
       setLikedIssues(prev => {
         const newSet = new Set(prev);
         liked ? newSet.add(issueId) : newSet.delete(issueId);
         return newSet;
       });
+    } catch (err) {
+      console.error('Unexpected error toggling like:', err);
     }
   };
 
@@ -142,31 +164,32 @@ const IssueFeed = () => {
 
   return (
     <div className="issue-feed-container">
-      {/* Sorting */}
       <div className="sorter-container">
         <button onClick={() => setSortBy('created_at')} className={sortBy === 'created_at' ? 'active' : ''}>Latest</button>
         <button onClick={() => setSortBy('like_count')} className={sortBy === 'like_count' ? 'active' : ''}>Most Liked</button>
         <button onClick={() => setSortBy('view_count')} className={sortBy === 'view_count' ? 'active' : ''}>Most Viewed</button>
       </div>
 
-      {/* Filters */}
       <div className="filters-container">
-        <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="filter-select">
-          <option value="All">All Categories</option>
-          {categories.map(cat => (
-            <option key={cat.id} value={cat.id}>{cat.name}</option>
-          ))}
-        </select>
+        {!govCategory && (
+          <>
+            <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="filter-select">
+              <option value="All">All Categories</option>
+              {categories.map(cat => (
+                <option key={cat.id} value={cat.id}>{cat.name}</option>
+              ))}
+            </select>
 
-        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="filter-select">
-          <option value="All">All Statuses</option>
-          <option value="Pending">Pending</option>
-          <option value="In Progress">In Progress</option>
-          <option value="Resolved">Resolved</option>
-        </select>
+            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="filter-select">
+              <option value="All">All Statuses</option>
+              <option value="Pending">Pending</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Resolved">Resolved</option>
+            </select>
+          </>
+        )}
       </div>
 
-      {/* Feed */}
       {filteredIssues.length === 0 ? (
         <div style={{ textAlign: 'center', marginTop: '4rem' }}>
           <h2>No issues found.</h2>
@@ -178,14 +201,11 @@ const IssueFeed = () => {
           const profile = profiles[issue.user_id] || {};
           return (
             <div key={issue.id} className="post-card">
-              {/* Severity badge */}
               {issue.severity && (
                 <span className={`severity-badge-top ${severityInfo.className}`}>
                   {severityInfo.label}
                 </span>
               )}
-
-              {/* Header with avatar and name */}
               <div className="post-header">
                 <div className="header-avatar">
                   {profile.avatar ? (
@@ -197,18 +217,15 @@ const IssueFeed = () => {
                 <div className="header-name">{profile.name || 'Anonymous'}</div>
               </div>
 
-              {/* Issue image */}
               {issue.image_url && (
                 <img src={issue.image_url} alt={issue.title} className="post-image" />
               )}
 
-              {/* Title & description */}
               <div className="post-content">
                 <h4 className="post-title">{issue.title}</h4>
                 <p className="post-description">{issue.description}</p>
               </div>
 
-              {/* Actions */}
               <div className="post-actions">
                 <button
                   onClick={() => handleLike(issue.id)}
@@ -220,7 +237,6 @@ const IssueFeed = () => {
                 <Link to={`/issue/${issue.id}`} className="action-btn">💬</Link>
               </div>
 
-              {/* Stats & timestamp */}
               <div className="post-stats">
                 <span>{issue.like_count || 0} likes</span>
                 <span>{issue.view_count || 0} views</span>
