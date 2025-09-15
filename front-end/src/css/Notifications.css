@@ -1,49 +1,113 @@
-/* src/css/Notifications.css */
 .notifications-container {
-    padding-top: 10px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
 }
 
-.notification-item {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1rem;
-    border-bottom: 1px solid var(--border-color);
+/* Card Layout */
+.notification-card {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+  padding: 10px;
+  background: #fff;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  word-break: break-word;
 }
 
-/* Nayi styling jo unread notifications ko alag dikhayegi */
-.notification-item.unread {
-    background-color: #f0f7ff; /* Halka neela background */
-    border-left: 3px solid var(--primary-color);
-    padding-left: calc(1rem - 3px);
+.notification-card.unread {
+  background: #e6f7ff;
+  border-left: 4px solid #1890ff;
+  font-weight: 600;
 }
 
-.notification-avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background-color: #eee;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
+.notification-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
-.notification-content {
-    flex-grow: 1;
+/* Image Styling */
+.notification-image-wrapper {
+  flex-shrink: 0;
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f0f0f0;
+}
+
+.notification-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Info Section */
+.notification-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.notification-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+  overflow-wrap: anywhere;
 }
 
 .notification-text {
-    margin: 0;
-    padding: 0;
-    font-size: 0.9rem;
-    line-height: 1.4;
+  margin: 4px 0 0 0;
+  font-size: 0.9rem;
+  color: #555;
+  line-height: 1.3;
+  word-wrap: break-word;
 }
 
 .notification-time {
-    margin: 4px 0 0 0;
-    padding: 0;
-    font-size: 0.8rem;
-    color: var(--text-light);
+  margin-top: 6px;
+  font-size: 0.75rem;
+  color: #999;
+  align-self: flex-end;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #555;
+}
+
+.empty-state span {
+  font-size: 3rem;
+}
+
+/* Loading */
+.loading-text {
+  text-align: center;
+  padding: 2rem;
+  font-size: 1rem;
+  color: #666;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 600px) {
+  .notification-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .notification-image-wrapper {
+    width: 100%;
+    height: 150px;
+  }
+
+  .notification-time {
+    align-self: flex-start;
+  }
 }

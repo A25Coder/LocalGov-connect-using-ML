@@ -1,47 +1,124 @@
-/* src/css/Header.css */
+/* Header Container */
 .app-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 15px;
-    background-color: #ffffff;
-    border-bottom: 1px solid #e0e0e0;
+    padding: 10px 20px;
+    background: linear-gradient(90deg, #4f93ff, #1c6ef2);
+    color: white;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     position: sticky;
     top: 0;
-    z-index: 100;
+    z-index: 10;
+    transition: background 0.3s ease;
 }
 
+/* Page Title */
 .header-title {
     margin: 0;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
+    font-weight: 600;
+    text-align: center;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0 10px;
 }
 
+/* Button Styling */
 .header-btn {
-    background: none;
+    background: rgba(255,255,255,0.2);
     border: none;
+    border-radius: 8px;
     font-size: 1.5rem;
     cursor: pointer;
+    padding: 6px 10px;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.25s, transform 0.2s;
 }
 
-/* 🔔 Notifications Button Styling */
+/* Hover Effects */
+.header-btn:hover {
+    background: rgba(255,255,255,0.35);
+    transform: scale(1.1);
+}
+
+/* Menu Button Specific */
+.menu-btn {
+    margin-right: 10px;
+}
+
+/* Notifications Button */
 .notifications-btn {
     position: relative;
+    margin-left: auto;
+    text-decoration: none;
 }
 
-/* 🔴 Badge Styling */
+/* Badge Styling */
 .notification-badge {
     position: absolute;
-    top: -5px;
-    right: -8px;
-    background-color: #e53e3e; /* Red color */
+    top: -6px;
+    right: -6px;
+    background-color: #ff4d4f;
     color: white;
     border-radius: 50%;
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     font-size: 0.75rem;
-    font-weight: bold;
+    font-weight: 700;
     display: flex;
     justify-content: center;
     align-items: center;
     border: 2px solid white;
+    animation: popIn 0.3s ease;
+}
+
+/* Badge pop-in animation */
+@keyframes popIn {
+    0% { transform: scale(0.5); opacity: 0; }
+    60% { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* Responsive adjustments */
+@media (max-width: 500px) {
+    .header-title {
+        font-size: 1.1rem;
+        padding: 0 5px;
+    }
+
+    .header-btn {
+        font-size: 1.3rem;
+        padding: 5px 8px;
+    }
+
+    .notification-badge {
+        width: 18px;
+        height: 18px;
+        font-size: 0.65rem;
+    }
+}
+
+/* Dark mode support (optional) */
+@media (prefers-color-scheme: dark) {
+    .app-header {
+        background: linear-gradient(90deg, #2a2a2a, #111);
+        color: #f0f0f0;
+    }
+    .header-btn {
+        color: #f0f0f0;
+        background: rgba(255,255,255,0.1);
+    }
+    .header-btn:hover {
+        background: rgba(255,255,255,0.2);
+    }
+    .notification-badge {
+        border: 2px solid #2a2a2a;
+    }
 }
